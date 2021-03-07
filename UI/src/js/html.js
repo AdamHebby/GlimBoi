@@ -1,7 +1,7 @@
 // This file stores lengthy HTML.
 
 function addCommandModal() {
-    return `
+  return `
     <div class="modal-body" id="commandAddModalBody">
    <table class="table table-hover">
       <thead>
@@ -59,11 +59,11 @@ function addCommandModal() {
          </tr>
       </tbody>
    </table>
-</div>`
+</div>`;
 }
 
 function editCommandModal(command) {
-   return `
+  return `
 <div class="modal-header text-center">
    <h4 class="modal-title w-100" id="myModalLabel">Edit a command</h4>
 </div>
@@ -121,11 +121,11 @@ function editCommandModal(command) {
    <button type="button" class="btn btn-outline-warning" onclick="editReset()" data-dismiss="modal">Close</button>
    <button class="btn btn-outline-success" onclick="editCommand()" id="editCommandButtonFinish">Edit</button>
 </div>
-   `
+   `;
 }
 
 function editCommandModalEntry() {
-   return `
+  return `
    <!--Header-->
 <div class="modal-header text-center">
    <h4 class="modal-title w-100" id="myModalLabelEdit">Edit a command</h4>
@@ -145,11 +145,11 @@ function editCommandModalEntry() {
    <p id="errorMessageEdit"></p>
    <button type="button" class="btn btn-outline-warning" data-dismiss="modal">Close</button>
    <button class="btn btn-outline-success" onclick="checkEditCommand()" id="addCommandButtonFinish">Edit</button>
-</div>`
+</div>`;
 }
 
 function editCommandReset() {
-   return `
+  return `
    <!--Header-->
 <div class="modal-header text-center">
    <h4 class="modal-title w-100" id="myModalLabelEdit">Edit a command</h4>
@@ -169,11 +169,11 @@ function editCommandReset() {
    <p id="errorMessageEdit"></p>
    <button type="button" class="btn btn-outline-warning" data-dismiss="modal">Close</button>
    <button class="btn btn-outline-success" onclick="checkEditCommand()" id="addCommandButtonFinish">Edit</button>
-</div>`
+</div>`;
 }
 
 function removeCommandReset() {
-   return `
+  return `
    <!--Header-->
       <div class="modal-header text-center">
         <h4 class="modal-title w-100" id="myModalLabelDelete">Remove a Command</h4>
@@ -190,5 +190,5 @@ function removeCommandReset() {
         <p id="errorMessageDelete"></p>
         <button type="button" class="btn btn-outline-warning" data-dismiss="modal">Close</button>
         <button class="btn btn-outline-danger" onclick="checkRemoveCommand()" id="removeCommandButtonFinish">Remove</button>
-      </div>`
+      </div>`;
 }

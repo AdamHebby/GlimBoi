@@ -1,129 +1,132 @@
-const { app, BrowserWindow, screen, ipcMain } = require('electron'); //electron modules
+const {app, BrowserWindow, screen, ipcMain} = require('electron'); // electron modules
 const log = require('electron-log');
-console.log = log.log; //Logs all console messages in the main process to a file for debug purposes.
-const { autoUpdater } = require('electron-updater'); //handles updates
-var isDev = require("electron-is-dev")
+console.log = log.log; // Logs all console messages in the main process to a file for debug purposes.
+const {autoUpdater} = require('electron-updater'); // handles updates
+var isDev = require('electron-is-dev');
 
 ipcMain.on('app_version', (event) => {
-  console.log("The current version is recieved. " + app.getVersion());
+  console.log('The current version is recieved. ' + app.getVersion());
   if (isDev) {
-    event.sender.send('app_version', { version: app.getVersion(), isDev: true });
-    console.log("isdev") 
+    event.sender.send('app_version', {version: app.getVersion(), isDev: true});
+    console.log('isdev');
   } else {
-    event.sender.send('app_version', { version: app.getVersion() , isDev: false});
-    console.log("Not dev")
-    autoUpdater.logger = log
+    event.sender.send('app_version', {version: app.getVersion(), isDev: false});
+    console.log('Not dev');
+    autoUpdater.logger = log;
     autoUpdater.autoDownload = true;
     autoUpdater.autoInstallOnAppQuit = true;
     console.log(autoUpdater.currentVersion);
-    autoUpdater.checkForUpdates()
+    autoUpdater.checkForUpdates();
   }
 });
 
 autoUpdater.on('update-available', () => {
   win.webContents.send('update_available');
-  console.log("avaible update!")
+  console.log('avaible update!');
 });
 autoUpdater.on('update-downloaded', () => {
   win.webContents.send('update_downloaded');
-  console.log("downloaded the update!")
+  console.log('downloaded the update!');
 });
 ipcMain.on('restart_app', () => {
   autoUpdater.quitAndInstall();
 });
 
-//console.log(autoUpdater.fullChangelog);
+// console.log(autoUpdater.fullChangelog);
 
 var win; // The main window
 
 
-function createWindow () { //make Win a window
-  const {width,height} = screen.getPrimaryDisplay().workAreaSize
-   win = new BrowserWindow({
+function createWindow() { // make Win a window
+  const {width, height} = screen.getPrimaryDisplay().workAreaSize;
+  win = new BrowserWindow({
     width: width,
     height: height,
-    backgroundColor: "#060818",
+    backgroundColor: '#060818',
     webPreferences: {
       nodeIntegration: true,
     },
-    icon: "UI/Icons/icon.ico",
-    frame: false
-  })
+    icon: 'UI/Icons/icon.ico',
+    frame: false,
+  });
   win.loadFile(app.getAppPath() + '/UI/index.html');
   win.setIcon('UI/Icons/icon.ico');
 }
-app.whenReady().then(createWindow)
+app.whenReady().then(createWindow);
 
 // send info to the renderer so it can use glimboi modules. This MUST come first and it needs to be very fast.
-ipcMain.on("appDataRequest", (event) => {
-  event.returnValue = [app.getAppPath(), app.getPath("userData")]
-})
+ipcMain.on('appDataRequest', (event) => {
+  event.returnValue = [app.getAppPath(), app.getPath('userData')];
+});
 
-ipcMain.on("pleaseClose", (event) => {
+ipcMain.on('pleaseClose', (event) => {
   win.close();
-  console.log("Recieved close request, closing.")
-})
+  console.log('Recieved close request, closing.');
+});
 
-ipcMain.on("pleaseMaximize", (event) => {
+ipcMain.on('pleaseMaximize', (event) => {
   win.maximize();
-  console.log("Maximizing window")
-})
+  console.log('Maximizing window');
+});
 
-ipcMain.on("pleaseMinimize", (event) => {
+ipcMain.on('pleaseMinimize', (event) => {
   win.minimize();
-  console.log("Minimizing Window")
-})
+  console.log('Minimizing Window');
+});
 
-ipcMain.on("pleaseRefresh", (event) => {
+ipcMain.on('pleaseRefresh', (event) => {
   win.reload();
-  console.log("Reloading Window")
-})
+  console.log('Reloading Window');
+});
 
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit()
+    app.quit();
   } else {
-    console.log("Closed")
+    console.log('Closed');
   }
-})
+});
 
 app.on('activate', () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow()
+    createWindow();
   }
-})
-
+});
 
 
 var loggingFile;
 
-ipcMain.on("startLogging", event => {
-  var { dialog } = require("electron");
-  var fs = require("fs") //handles Files (writing and reading)
-  dialog.showSaveDialog(win, {title: "Save chat:", defaultPath: app.getPath("logs"), buttonLabel: "Create", properties: ['showOverwriteConfirmation', 'promptToCreate ', ], filters: [{name: "Chat Logs", extensions: ["txt"]}]}).then(data => {
-    console.log(data)
+ipcMain.on('startLogging', (event) => {
+  const {dialog} = require('electron');
+  const fs = require('fs'); // handles Files (writing and reading)
+  dialog.showSaveDialog(win, {title: 'Save chat:', defaultPath: app.getPath('logs'), buttonLabel: 'Create', properties: ['showOverwriteConfirmation', 'promptToCreate '], filters: [{name: 'Chat Logs', extensions: ['txt']}]}).then((data) => {
+    console.log(data);
     if (data == undefined || data.canceled == true) {
-      console.log("They did not select a file.");
-      event.reply("noLogSelected", "No file was selected.")
+      console.log('They did not select a file.');
+      event.reply('noLogSelected', 'No file was selected.');
     } else {
-      loggingFile = fs.createWriteStream(data.filePath)
-      event.reply("startedLogging", "Logging has begun");
-      console.log("Started logging chat messages.")
+      loggingFile = fs.createWriteStream(data.filePath);
+      event.reply('startedLogging', 'Logging has begun');
+      console.log('Started logging chat messages.');
     }
-  })
-})
+  });
+});
 
-ipcMain.on("logMessage", (event, arg) => {
+ipcMain.on('logMessage', (event, arg) => {
   try {
-  loggingFile.write(`
-  ${arg.user}: ${arg.message}`, "utf-8")
-  } catch(e) {
+    loggingFile.write(`
+  ${arg.user}: ${arg.message}`, 'utf-8');
+  } catch (e) {
     console.log(e);
   }
-})
-  
-ipcMain.on("logEnd", event => {
-  try {loggingFile.end(); console.log("Finishes chat logs.");} catch(e) {console.log(e); event.reply("endedLog", e)}
-  event.reply("endedLog", "The log has been ended.")
-})
+});
+
+ipcMain.on('logEnd', (event) => {
+  try {
+    loggingFile.end(); console.log('Finishes chat logs.');
+  } catch (e) {
+    console.log(e); event.reply('endedLog', e);
+  }
+  event.reply('endedLog', 'The log has been ended.');
+});

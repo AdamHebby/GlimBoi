@@ -1,5 +1,5 @@
-var ChatHandle = require(appData[0] + "/chatbot/lib/chat.js"); // Chat Module
-var ModHandle = require(appData[0] + "/chatbot/lib/moderator.js"); // handles moderator actions
+var ChatHandle = require(appData[0] + '/chatbot/lib/chat.js'); // Chat Module
+var ModHandle = require(appData[0] + '/chatbot/lib/moderator.js'); // handles moderator actions
 var isDev = false; // We assume they are on a production release.
 ChatHandle.updatePath(appData[1]);
 
@@ -11,14 +11,14 @@ var currentChatConnected = null;
  * Gets the bot username for autofilling recent channels
  */
 async function getBot() {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     try {
-      AuthHandle.getToken().then(data => {
+      AuthHandle.getToken().then((data) => {
         if (data == undefined || data.length == 0 ) {
           resolve(null);
         } else {
-          ApiHandle.updatePath(data); //Sends the API module our access token.
-          ApiHandle.getBotAccount().then(data => {
+          ApiHandle.updatePath(data); // Sends the API module our access token.
+          ApiHandle.getBotAccount().then((data) => {
             resolve(data);
           });
         }
@@ -27,7 +27,7 @@ async function getBot() {
       console.log(e);
       resolve(null);
     }
-  })
+  });
 }
 /**
  * The main starting logic for joining and leaving and deleting recent chats / channels
@@ -48,20 +48,20 @@ async function getBot() {
  * Auto Join:
  *  - Updates the DB and tells it to auto-join when there are no connections on load
  */
-$(document).on('click', '#chatConnections button', function (event) {
-  var action    = $(this).attr('data-action');
-  var listing   = $(this).closest('.channel-listing');
-  var channel   = listing.attr('data-channel');
-  var channelid = listing.attr('data-channelid');
+$(document).on('click', '#chatConnections button', function(event) {
+  const action = $(this).attr('data-action');
+  const listing = $(this).closest('.channel-listing');
+  const channel = listing.attr('data-channel');
+  const channelid = listing.attr('data-channelid');
 
   if (action === 'auto-join') {
     $('button[data-action=auto-join]').prop('disabled', true);
 
-    var enabled = ($(this).attr('data-enabled') == "false"); // Invert current setting
+    const enabled = ($(this).attr('data-enabled') == 'false'); // Invert current setting
     console.log(`Setting autoJoin for ${channel} to ${enabled}`);
 
     // Set the selected channel to be auto-join
-    ChatHandle.setAutoJoinChannelByID(channelid, enabled).then(channel => {
+    ChatHandle.setAutoJoinChannelByID(channelid, enabled).then((channel) => {
       $('button[data-action=auto-join]').prop('disabled', false);
 
       // Done, so reset the classes
@@ -99,14 +99,14 @@ $(document).on('click', '#chatConnections button', function (event) {
   // Join a chat? Set a timeout to avoid a race condition between disconnect and joinChat
   // We cannot async / promise the disconnect on the websocket
   if (action === 'join') {
-    setTimeout(function () {
+    setTimeout(function() {
       joinChat(channel);
     }, 500);
   } if (ChatHandle.isConnected() === false) {
     // Clear the right-side text of what channel we're connect to & reload channels after deletion
     $('#channelConnectedName').removeClass('text-success').addClass('text-danger');
     $('#channelConnectedName').text('Not Connected');
-    ChatHandle.getAllRecentChannels().then(channels => displayChannels(channels));
+    ChatHandle.getAllRecentChannels().then((channels) => displayChannels(channels));
   }
 });
 
@@ -115,27 +115,27 @@ $(document).on('click', '#chatConnections button', function (event) {
  * @param {string} chat
  */
 function joinChat(chat) {
-  var chatToJoin = chat;
+  const chatToJoin = chat;
 
-  AuthHandle.getToken().then(data => {
+  AuthHandle.getToken().then((data) => {
     if (data == undefined || data.length == 0 ) {
-      errorMessage("The auth process is not yet complete. Please complete it before trying to join a chat.", "Go to the home page of Glimboi and auth again.")
+      errorMessage('The auth process is not yet complete. Please complete it before trying to join a chat.', 'Go to the home page of Glimboi and auth again.');
     } else {
-      ApiHandle.updatePath(data); //Sends the API module our access token.
-      ApiHandle.getChannelID(chatToJoin).then(response => {
+      ApiHandle.updatePath(data); // Sends the API module our access token.
+      ApiHandle.getChannelID(chatToJoin).then((response) => {
         if (response == null) {
-          errorMessage(response, "Please make sure that the channel exists. Check your spelling.")
-        } else if (response.status == "AUTHNEEDED") {
-          errorMessage(response.data, "You need to authenticate again.")
+          errorMessage(response, 'Please make sure that the channel exists. Check your spelling.');
+        } else if (response.status == 'AUTHNEEDED') {
+          errorMessage(response.data, 'You need to authenticate again.');
         } else {
-          //We have the ID, time to join the channel. At this point we assume the auth info is correct and we can finally get to their channel.
+          // We have the ID, time to join the channel. At this point we assume the auth info is correct and we can finally get to their channel.
           currentChatConnected = chatToJoin;
           ChatHandle.join(data, response); // Joins the channel
-          successMessage("Chat connected!", "Please disconnect when you are finished. Happy Streaming!");
+          successMessage('Chat connected!', 'Please disconnect when you are finished. Happy Streaming!');
           // Now we need to import the filter.
           ModHandle.importFilter();
 
-          addChannelAndDisplay(chatToJoin).then(function () {
+          addChannelAndDisplay(chatToJoin).then(function() {
             if (chatToJoin.toLowerCase() === 'glimboi') {
               channelNameText = 'GlimBoi (TEST)';
             }
@@ -143,51 +143,51 @@ function joinChat(chat) {
             $('#channelConnectedName').removeClass('text-danger').addClass('text-success ');
           });
         }
-      })
+      });
     }
-  })
+  });
 }
 
 /**
  * Adds a new chat / channel only, does not connect
  */
-$(document).on('click', '#triggerNewChatAdd', function (event) {
-  var chatToJoin = $('#newChatName').val();
-  AuthHandle.getToken().then(data => {
+$(document).on('click', '#triggerNewChatAdd', function(event) {
+  const chatToJoin = $('#newChatName').val();
+  AuthHandle.getToken().then((data) => {
     if (data == undefined || data.length == 0) {
-      errorMessage("The auth process is not yet complete. Please complete it before trying to join a chat.", "Go to the home page of Glimboi and auth again.")
+      errorMessage('The auth process is not yet complete. Please complete it before trying to join a chat.', 'Go to the home page of Glimboi and auth again.');
     } else {
       // Authenticate if we can and check the channel
-      ApiHandle.updatePath(data); //Sends the API module our access token.
-      ApiHandle.getChannelID(chatToJoin).then(response => {
+      ApiHandle.updatePath(data); // Sends the API module our access token.
+      ApiHandle.getChannelID(chatToJoin).then((response) => {
         if (response == null || response.data == 'Could not find resource') {
-          errorMessage(response.data, "Please make sure that the channel exists. Check your spelling.")
+          errorMessage(response.data, 'Please make sure that the channel exists. Check your spelling.');
         } else {
-          addChannelAndDisplay(chatToJoin).then(function () {
-            $('#newChatModal').modal('hide')
+          addChannelAndDisplay(chatToJoin).then(function() {
+            $('#newChatModal').modal('hide');
             $('#newChatName').val('');
           });
         }
-      })
+      });
     }
-  })
+  });
 });
 
 /**
  * Loads the chat window, autofills some data from the API and displays it
  */
 function loadChatWindow() {
-  globalChatMessages.forEach(msg => {
+  globalChatMessages.forEach((msg) => {
     ChatHandle.logMessage(msg[0], msg[1], msg[2], false);
   });
 
   try {
-    getBot().then(botName => {
-      var ts = (Date.now());
-      var defaultChannels = [{
+    getBot().then((botName) => {
+      const ts = (Date.now());
+      const defaultChannels = [{
         channel: 'GlimBoi',
         timestamp: ts,
-        autoJoin: false
+        autoJoin: false,
       }];
 
       // If we have authentication, add our name to recent channels
@@ -195,20 +195,20 @@ function loadChatWindow() {
         defaultChannels.push({
           channel: botName,
           timestamp: ts,
-          autoJoin: false
+          autoJoin: false,
         });
       }
 
-      ChatHandle.getAllRecentChannels().then(channels => {
+      ChatHandle.getAllRecentChannels().then((channels) => {
         if (channels.length == 0) {
-          defaultChannels.forEach(chan => {
+          defaultChannels.forEach((chan) => {
             ChatHandle.addRecentChannel(chan.channel, chan.ts, chan.autoJoin);
           });
           channels = defaultChannels;
         }
 
         $('#chatConnections').empty();
-        channels.forEach(chan => {
+        channels.forEach((chan) => {
           if (chan.autoJoin === true && ChatHandle.isConnected() === false) {
             joinChat(chan.channel);
           }
@@ -228,10 +228,10 @@ function loadChatWindow() {
  * @param {string} chatToJoin
  */
 async function addChannelAndDisplay(chatToJoin) {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     try {
-      ChatHandle.addRecentChannel(chatToJoin).then(newChannel => {
-        ChatHandle.getAllRecentChannels().then(channels => {
+      ChatHandle.addRecentChannel(chatToJoin).then((newChannel) => {
+        ChatHandle.getAllRecentChannels().then((channels) => {
           displayChannels(channels);
           resolve(newChannel);
         });
@@ -254,12 +254,12 @@ function displayChannels(channels) {
   $('#chatConnections').append(`<div class="scroller"></div>`);
 
   // Sort channels by timestamp
-  channels.sort((a,b) => (a.timestamp < b.timestamp) ? 1 : ((b.timestamp < a.timestamp) ? -1 : 0))
+  channels.sort((a, b) => (a.timestamp < b.timestamp) ? 1 : ((b.timestamp < a.timestamp) ? -1 : 0));
 
   // Add default elements
-  channels.forEach(channel => {
-    var d = new Date(channel.timestamp);
-    var currentlyConnected = currentChatConnected === channel.channel;
+  channels.forEach((channel) => {
+    const d = new Date(channel.timestamp);
+    const currentlyConnected = currentChatConnected === channel.channel;
 
     if (currentChatConnected === null) {
       $('#channelConnectedName').removeClass('text-success').addClass('text-danger');
@@ -271,12 +271,12 @@ function displayChannels(channels) {
 
     // Disable all leave buttons (except on the connected chat)
     // Enable all join buttons (except on the connected chat)
-    var disableJoin = (currentChatConnected !== null) ? 'disabled' : '';
-    var disableLeave = (currentChatConnected === null || !currentlyConnected) ? 'disabled' : '';
-    var joinClasses = (channel.autoJoin) ? 'btn-success' : 'btn-outline-warning';
+    const disableJoin = (currentChatConnected !== null) ? 'disabled' : '';
+    const disableLeave = (currentChatConnected === null || !currentlyConnected) ? 'disabled' : '';
+    const joinClasses = (channel.autoJoin) ? 'btn-success' : 'btn-outline-warning';
 
-    var channelNameText = channel.channel;
-    var channelNameHTML = channel.channel;
+    let channelNameText = channel.channel;
+    let channelNameHTML = channel.channel;
 
     if (channel.channel.toLowerCase() === 'glimboi') {
       channelNameText = 'GlimBoi (TEST)';
@@ -302,8 +302,8 @@ function displayChannels(channels) {
  * Resets when sent.
  */
 function sendMessage() {
-  ChatHandle.filterMessage(document.getElementById("messageArea").value, "user");
-  document.getElementById("messageArea").value = "" // resets the message box
+  ChatHandle.filterMessage(document.getElementById('messageArea').value, 'user');
+  document.getElementById('messageArea').value = ''; // resets the message box
 }
 
 
@@ -314,14 +314,14 @@ function checkForUpdate() {
   const version = document.getElementById('version');
   ipcRenderer.send('app_version');
   ipcRenderer.on('app_version', (event, arg) => {
-    console.log("Recieved app_version with : " + arg.version)
-    console.log("Removing all listeners for app_version.")
+    console.log('Recieved app_version with : ' + arg.version);
+    console.log('Removing all listeners for app_version.');
     version.innerText = 'Version ' + arg.version;
     if (arg.isDev == true) {
       isDev = true;
-      console.log("Glimboi is in dev mode. We will not request the token.")
+      console.log('Glimboi is in dev mode. We will not request the token.');
     } else {
-      console.log("GlimBoi is in production mode. We will request an access token. ")
+      console.log('GlimBoi is in production mode. We will request an access token. ');
     }
     ipcRenderer.removeAllListeners('app_version');
   });
@@ -331,13 +331,13 @@ function checkForUpdate() {
 
   ipcRenderer.on('update_available', () => {
     ipcRenderer.removeAllListeners('update_available');
-    console.log("Update Avaible")
+    console.log('Update Avaible');
     message.innerText = 'A new update is available. Downloading now...';
     notification.classList.remove('hidden');
   });
 
   ipcRenderer.on('update_downloaded', () => {
-    console.log("Update Downloaded")
+    console.log('Update Downloaded');
     ipcRenderer.removeAllListeners('update_downloaded');
     message.innerText = 'Update Downloaded. It will be installed on restart. Restart now?';
     restartButton.classList.remove('hidden');
@@ -345,40 +345,42 @@ function checkForUpdate() {
     function closeNotification() {
       notification.classList.add('hidden');
     }
-  })
+  });
   // test functions
-  ipcRenderer.on("aaaaaaaaaaaaa", () => {
-    console.log("it happened")
-  })
-  ipcRenderer.on("test", data => {
-    console.log(data)
-  })
+  ipcRenderer.on('aaaaaaaaaaaaa', () => {
+    console.log('it happened');
+  });
+  ipcRenderer.on('test', (data) => {
+    console.log(data);
+  });
 }
 
 function restartApp() {
-  console.log("trying to restart the app for the update")
+  console.log('trying to restart the app for the update');
   ipcRenderer.send('restart_app');
 }
 
 function testingStuff(e) {
-  contextItem = $(e.target).attr('name')
-  console.log(contextItem)
-  var top = e.pageY - 110;
-  var left = e.pageX + 10;
-  $("#context-menu").css({
-    display: "block",
+  contextItem = $(e.target).attr('name');
+  console.log(contextItem);
+  const top = e.pageY - 110;
+  const left = e.pageX + 10;
+  $('#context-menu').css({
+    display: 'block',
     top: top,
-    left: left
-  }).addClass("show");
-  document.body.addEventListener("click", function() {$("#context-menu").removeClass("show").hide()},{once:true})
+    left: left,
+  }).addClass('show');
+  document.body.addEventListener('click', function() {
+    $('#context-menu').removeClass('show').hide();
+  }, {once: true});
 }
 
 function contextMenu(action) {
-  if (action == "ADDUSER") {
-    UserHandle.addUser(contextItem.toLowerCase(), false).then(data => {
+  if (action == 'ADDUSER') {
+    UserHandle.addUser(contextItem.toLowerCase(), false).then((data) => {
 
-    })
-  } else if (action == "ADDQUOTE") {
+    });
+  } else if (action == 'ADDQUOTE') {
 
   } else {
 
@@ -390,28 +392,28 @@ function contextMenu(action) {
  * @param {string} action The type of moderator action
  */
 function actionBuilder(action) {
-  console.log(action)
-  document.getElementById("actionType").innerText = action
+  console.log(action);
+  document.getElementById('actionType').innerText = action;
   switch (action) {
-    case "Short Timeout":
-      document.getElementById("targetActionButton").onclick = function() {
-        ModHandle.timeoutByUsername("short", document.getElementById('whichUser').value, "GUI")
-      }
+    case 'Short Timeout':
+      document.getElementById('targetActionButton').onclick = function() {
+        ModHandle.timeoutByUsername('short', document.getElementById('whichUser').value, 'GUI');
+      };
       break;
-    case "Long Timeout":
-      document.getElementById("targetActionButton").onclick = function() {
-        ModHandle.timeoutByUsername("long", document.getElementById('whichUser').value, "GUI")
-      }
+    case 'Long Timeout':
+      document.getElementById('targetActionButton').onclick = function() {
+        ModHandle.timeoutByUsername('long', document.getElementById('whichUser').value, 'GUI');
+      };
       break;
-    case "Ban":
-      document.getElementById("targetActionButton").onclick = function() {
-        ModHandle.banByUsername(document.getElementById('whichUser').value, "GUI")
-      }
+    case 'Ban':
+      document.getElementById('targetActionButton').onclick = function() {
+        ModHandle.banByUsername(document.getElementById('whichUser').value, 'GUI');
+      };
       break;
-    case "UnBan":
-      document.getElementById("targetActionButton").onclick = function() {
-        ModHandle.unBanByUsername(document.getElementById('whichUser').value, "GUI")
-      }
+    case 'UnBan':
+      document.getElementById('targetActionButton').onclick = function() {
+        ModHandle.unBanByUsername(document.getElementById('whichUser').value, 'GUI');
+      };
       break;
 
     default:
